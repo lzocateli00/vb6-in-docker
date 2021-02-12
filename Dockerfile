@@ -9,24 +9,24 @@ ARG STF
 ARG COMPANY_NAME
 ARG USER_NAME
 
-ARG REPO=mcr.microsoft.com/windows/servercore
-FROM $REPO:ltsc2016-amd64
+ARG REPO=mcr.microsoft.com/windows
+FROM $REPO:1903
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
 ENV NO_PROXY=cat.com HTTP_PROXY=http://proxy.cat.com:80 HTTPS_PROXY=http://proxy.cat.com:80
 
 LABEL maintainer="Lincoln Zocateli <lzocateli00@outlook.com>" `
-    org.label-schema.description="Visual Basic 6 in Docker" `
-    org.label-schema.name=${BUILD_NAME} `
+    org.label-schema.description="Visual Basic 6 IDE in Docker" `
+    org.label-schema.name=$BUILD_NAME `
     org.label-schema.url="https://github.com/lzocateli00" `
-    org.label-schema.vcs-ref=${VCS_REF} `
+    org.label-schema.vcs-ref=$VCS_REF `
     org.label-schema.vcs-url="https://github.com/lzocateli00/vb6-in-docker" `
     org.label-schema.usage="https://github.com/lzocateli00/vb6-in-docker/blob/main/README.md" `
     org.label-schema.vendor="Lincoln Zocateli" `
-    org.label-schema.version=${VERSION} `
+    org.label-schema.version=$VERSION `
     org.label-schema.schema-version="1.0.0" `
-    org.label-schema.build-date=${BUILD_DATE} 
+    org.label-schema.build-date=$BUILD_DATE 
 
 
 COPY vb6midia c:/vb6midia/
@@ -36,8 +36,11 @@ COPY vb6midia c:/vb6midia/
 COPY ${STF:-vb6ent.stf} c:/vb6midia/vb6cd1/setup/acmsetup.stf
 
 RUN Start-Process powershell -Verb runAs; `
-    Start-Process -FilePath "REGEDIT.exe /S c:/vb6midia/vb6cd1/key.dat"; `
-    Start-Process -FilePath "c:/vb6midia/vb6cd1/setup/acmsetup.exe /T acmsetup.stf /S 'c:/vb6midia/vb6cd1' /n ${USER_NAME} /o ${COMPANY_NAME} /k ${KEY} /b 1 /gc $TEMP/vb6_install_log.txt /qtn" -Wait
+    Start-Process -FilePath "REGEDIT.exe /S c:/vb6midia/vb6cd1/key.dat"
+    
+RUN Start-Process -FilePath "c:/vb6midia/vb6cd1/setup/acmsetup.exe /T acmsetup.stf /S 'c:/vb6midia/vb6cd1' /n ${USER_NAME} /o ${COMPANY_NAME} /k ${KEY} /b 1 /gc $TEMP/vb6_install_log.txt /qtn" -Wait
+
+RUN Start-Process -FilePath "C:/Windows/System32/regsvr32.exe /s c:/vb6midia/third-party/VB6IDEMouseWheelAddin.dll" -Wait 
 
 
 # REM Set the Installation source folder variable
